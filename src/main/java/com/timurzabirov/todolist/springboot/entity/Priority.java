@@ -13,7 +13,7 @@ import javax.persistence.*;
 public class Priority {
 
     /*Указываем, что поле заполняется в БД
-    * При добавлении нового объекта ему присваивается новый id */
+     * При добавлении нового объекта ему присваивается новый id */
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id")
