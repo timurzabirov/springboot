@@ -63,7 +63,8 @@ public class PriorityController {
 
         // ResponseEntity - это объект-коробка, в который мы можем поместить объект и статус запроса
         // Метод save() используется как для добавления, так и для обновления сущности
-        return ResponseEntity.ok(priorityRepository.save(priority));
+        priorityRepository.save(priority);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     //Параметр id передается не в теле запроса, а в URL
@@ -91,7 +92,7 @@ public class PriorityController {
         } catch (EmptyResultDataAccessException e) {
             return new ResponseEntity("Id = " + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
-        return ResponseEntity.ok(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     // Поиск по любым параметрам(CategorySearchValues class)
