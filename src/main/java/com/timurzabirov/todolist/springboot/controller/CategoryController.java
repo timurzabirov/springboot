@@ -1,8 +1,8 @@
 package com.timurzabirov.todolist.springboot.controller;
 
 import com.timurzabirov.todolist.springboot.entity.Category;
-import com.timurzabirov.todolist.springboot.repository.CategoryRepository;
 import com.timurzabirov.todolist.springboot.search.CategorySearchValues;
+import com.timurzabirov.todolist.springboot.service.CategoryService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +18,14 @@ import java.util.NoSuchElementException;
 public class CategoryController {
 
     //Доступ к данным из БД
-    private final CategoryRepository categoryRepository;
+    private final CategoryService service;
 
     /*Внедрение экземпляра класса через конструктор.
      * Не используем @Autowired для переменной,т.к. Field injection is not recommended*/
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+    public CategoryController(CategoryService service) {
+        this.service = service;
     }
+
 
     @PostMapping("/add")
     public ResponseEntity<Category> add(@RequestBody Category category) {
@@ -40,7 +41,7 @@ public class CategoryController {
 
         // ResponseEntity - это объект-коробка, в который мы можем поместить объект и статус запроса
         // Метод save() используется как для добавления, так и для обновления сущности
-        return ResponseEntity.ok(categoryRepository.save(category));
+        return ResponseEntity.ok(service.add(category));
     }
 
     @PutMapping("/update")
@@ -57,7 +58,7 @@ public class CategoryController {
 
         // ResponseEntity - это объект-коробка, в который мы можем поместить объект и статус запроса
         // Метод save() используется как для добавления, так и для обновления сущности
-        categoryRepository.save(category);
+        service.add(category);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -66,7 +67,7 @@ public class CategoryController {
     public ResponseEntity<Category> getById(@PathVariable Long id) {
         Category category = null;
         try {
-            category = categoryRepository.findById(id).get();
+            category = service.findById(id);
         } catch (NoSuchElementException e) {
             return new ResponseEntity("Id = " + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -75,14 +76,14 @@ public class CategoryController {
 
     @GetMapping("/all")
     public ResponseEntity<List<Category>> findAll() {
-        return ResponseEntity.ok(categoryRepository.findAllByOrderByTitleAsc());
+        return ResponseEntity.ok(service.findAllByOrderByTitleAsc());
     }
 
     //Параметр id передается не в теле запроса, а в URL
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteById(@PathVariable Long id) {
         try {
-            categoryRepository.deleteById(id);
+            service.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             return new ResponseEntity("Id = " + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -93,7 +94,7 @@ public class CategoryController {
     @PostMapping("/search")
     public ResponseEntity<List<Category>> search(@RequestBody CategorySearchValues categorySearchValues) {
         // Если вместо текста будет null или пустота, то вернутся все значения
-        return ResponseEntity.ok(categoryRepository.findByTitle(categorySearchValues.getText()));
+        return ResponseEntity.ok(service.findByTitle(categorySearchValues.getText()));
     }
 
 }

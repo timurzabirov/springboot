@@ -1,8 +1,8 @@
 package com.timurzabirov.todolist.springboot.controller;
 
 import com.timurzabirov.todolist.springboot.entity.Priority;
-import com.timurzabirov.todolist.springboot.repository.PriorityRepository;
 import com.timurzabirov.todolist.springboot.search.PrioritySearchValues;
+import com.timurzabirov.todolist.springboot.service.PriorityService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +18,12 @@ import java.util.NoSuchElementException;
 public class PriorityController {
 
     //Доступ к данным из БД
-    private final PriorityRepository priorityRepository;
+    private final PriorityService service;
 
     /*Внедрение экземпляра класса через конструктор.
      * Не используем @Autowired для переменной,т.к. Field injection is not recommended*/
-    public PriorityController(PriorityRepository priorityRepository) {
-        this.priorityRepository = priorityRepository;
+    public PriorityController(PriorityService service) {
+        this.service = service;
     }
 
     @PostMapping("/add")
@@ -42,8 +42,7 @@ public class PriorityController {
         }
 
         // ResponseEntity - это объект-коробка, в который мы можем поместить объект и статус запроса
-        // Метод save() используется как для добавления, так и для обновления сущности
-        return ResponseEntity.ok(priorityRepository.save(priority));
+        return ResponseEntity.ok(service.add(priority));
     }
 
     @PutMapping("/update")
@@ -62,8 +61,7 @@ public class PriorityController {
         }
 
         // ResponseEntity - это объект-коробка, в который мы можем поместить объект и статус запроса
-        // Метод save() используется как для добавления, так и для обновления сущности
-        priorityRepository.save(priority);
+        service.add(priority);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -72,7 +70,7 @@ public class PriorityController {
     public ResponseEntity<Priority> getById(@PathVariable Long id) {
         Priority priority = null;
         try {
-            priority = priorityRepository.findById(id).get();
+            priority = service.findById(id);
         } catch (NoSuchElementException e) {
             return new ResponseEntity("Id = " + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -81,14 +79,14 @@ public class PriorityController {
 
     @GetMapping("/all")
     public List<Priority> findAll() {
-        return priorityRepository.findAllByOrderByIdAsc();
+        return service.findAll();
     }
 
     //Параметр id передается не в теле запроса, а в URL
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteById(@PathVariable Long id) {
         try {
-            priorityRepository.deleteById(id);
+            service.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             return new ResponseEntity("Id = " + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -99,7 +97,7 @@ public class PriorityController {
     @PostMapping("/search")
     public ResponseEntity<List<Priority>> search(@RequestBody PrioritySearchValues prioritySearchValues) {
         // Если вместо текста будет null или пустота, то вернутся все значения
-        return ResponseEntity.ok(priorityRepository.findByTitle(prioritySearchValues.getText()));
+        return ResponseEntity.ok(service.findByTitle(prioritySearchValues.getText()));
     }
 
 }
